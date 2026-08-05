@@ -1,0 +1,33 @@
+{
+    "server": "192.168.1.8",
+    "user": "sa",
+    "driver": "ODBC Driver 18 for SQL Server",
+    "database": "master",
+    "selected_databases": [
+        "CWSADIENT",
+        "CWSAEROSPACE",
+        "CWSAHRESTY",
+        "CWSALBEA",
+        "CWSAMETEKABC",
+        "CWSAMETEKADI",
+        "CWSAMETEKBSN",
+        "CWSAMETEKFMH",
+        "CWSAMETEKHCC",
+        "CWSAMETEKHKP",
+        "CWSAMETEKLRD",
+        "CWSDEMO",
+        "CWSUSERS"
+    ],
+    "selected_path": "C:/Users/MCS-IT24/Desktop",
+    "nas_user": "",
+    "auto_delete_months": 0,
+    "auto_delete_days": 0,
+    "schedule_enabled": true,
+    "schedule_hours": 0,
+    "schedule_minutes": 20,
+    "schedule_days": [],
+    "schedule_start": "2026-08-05T00:00:00",
+    "email_enabled": true,
+    "email_ok": "",
+    "email_err": ""
+}
