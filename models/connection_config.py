@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from security.credential_manager import (
     NAS_SERVICE,
@@ -8,7 +9,7 @@ from security.credential_manager import (
     save_password,
 )
 
-CONFIG_FILE = "settings.json"
+CONFIG_FILE = Path("settings.json")
 
 
 @dataclass
@@ -65,18 +66,18 @@ class ConnectionConfig:
             "email_err": self.email_err,
         }
 
-        with open(CONFIG_FILE, "w") as file:
+        with CONFIG_FILE.open("w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
 
         save_password(SQL_SERVICE, self.user, self.password)
-        if self.user:
+        if self.nas_user:
             save_password(NAS_SERVICE, self.nas_user, self.nas_pass)
 
     @classmethod
     def load(cls):
 
         try:
-            with open(CONFIG_FILE, "r", encoding="utf-8") as file:
+            with CONFIG_FILE.open("r", encoding="utf-8") as file:
                 data = json.load(file)
 
             user = data.get("user", "")
