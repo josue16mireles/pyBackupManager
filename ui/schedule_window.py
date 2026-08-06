@@ -1,8 +1,11 @@
-from PySide6.QtWidgets import QDialog
-from PySide6.QtCore import Qt, QDateTime, QTime
-from ui.ui_schedule_window import Ui_Dialog
 from models.connection_config import ConnectionConfig
-#from PySide6.QtGui import QIcon
+from PySide6.QtCore import QDateTime, Qt, QTime
+from PySide6.QtWidgets import QDialog
+
+from ui.ui_schedule_window import Ui_Dialog
+
+# from PySide6.QtGui import QIcon
+
 
 class ScheduleWindow(QDialog):
     def __init__(self, parent=None):
@@ -12,9 +15,9 @@ class ScheduleWindow(QDialog):
         self.ui.setupUi(self)
 
         self.setWindowTitle("Progamación de Backups")
-        #self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
+        # self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
 
-        #conectar eventos
+        # conectar eventos
         self.ui.buttonBox.accepted.connect(self.save)
         self.ui.buttonBox.rejected.connect(self.reject)
 
@@ -30,15 +33,10 @@ class ScheduleWindow(QDialog):
         self.ui.chkDom.setChecked(6 in config.schedule_days)
 
         if config.schedule_start:
-            self.ui.dtInicia.setDateTime(
-                QDateTime.fromString(
-                    config.schedule_start,
-                    Qt.ISODate
-                )
-            )
+            self.ui.dtInicia.setDateTime(QDateTime.fromString(config.schedule_start, Qt.ISODate))
         else:
             tomorrow = QDateTime.currentDateTime().addDays(1)
-            tomorrow.setTime(QTime(0,0))
+            tomorrow.setTime(QTime(0, 0))
             self.ui.dtInicia.setDateTime(tomorrow)
 
     def save(self):
@@ -51,18 +49,16 @@ class ScheduleWindow(QDialog):
         if self.ui.chkMar.isChecked():
             dias.append(1)
         if self.ui.chkMie.isChecked():
-            dias.append(2) 
+            dias.append(2)
         if self.ui.chkJue.isChecked():
             dias.append(3)
         if self.ui.chkVie.isChecked():
             dias.append(4)
         if self.ui.chkSab.isChecked():
-            dias.append(5) 
+            dias.append(5)
         if self.ui.chkDom.isChecked():
             dias.append(6)
-        config.schedule_days = dias          
-        config.schedule_start = (
-            self.ui.dtInicia.dateTime().toPython().isoformat()
-        )
+        config.schedule_days = dias
+        config.schedule_start = self.ui.dtInicia.dateTime().toPython().isoformat()
         config.save()
         self.accept()

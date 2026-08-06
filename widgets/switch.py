@@ -1,19 +1,10 @@
+from PySide6.QtCore import Property, QPropertyAnimation, QRectF, QSize, Qt
+from PySide6.QtGui import QBrush, QColor, QPainter
 from PySide6.QtWidgets import QCheckBox
-from PySide6.QtCore import (
-    Qt,
-    QRectF,
-    QSize,
-    Property,
-    QPropertyAnimation
-)
-from PySide6.QtGui import(
-    QPainter,
-    QColor,
-    QBrush
-)
+
 
 class Switch(QCheckBox):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setCursor(Qt.PointingHandCursor)

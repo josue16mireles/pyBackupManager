@@ -1,42 +1,40 @@
+from database import test_connection
+from models.connection_config import ConnectionConfig
 from PySide6.QtWidgets import (
     QDialog,
-    QLineEdit,
-    QPushButton,
-    QMessageBox,
-    QVBoxLayout,
+    QFormLayout,
     QHBoxLayout,
-    QFormLayout
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
 )
 
-from database import test_connection
-from security.credential_manager import save_password
-from models.connection_config import ConnectionConfig
-#from PySide6.QtGui import QIcon
+# from PySide6.QtGui import QIcon
+
 
 class ConnectionWindow(QDialog):
-
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Configación SQL Server")
-        #self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
+        # self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
         self.resize(420, 220)
 
-
-        #layout principal
+        # layout principal
         mainLayout = QVBoxLayout()
 
-        #formulario
+        # formulario
         formLayout = QFormLayout()
 
         # Servidor
-        #self.server = QLineEdit("localhost")
+        # self.server = QLineEdit("localhost")
         self.server = QLineEdit()
 
         # Usuario
-        #layout.addWidget(QLabel("Usuario"), 1, 0)
+        # layout.addWidget(QLabel("Usuario"), 1, 0)
         self.user = QLineEdit()
-        #layout.addWidget(self.user, 1, 1)
+        # layout.addWidget(self.user, 1, 1)
 
         # Password
         self.password = QLineEdit()
@@ -46,7 +44,7 @@ class ConnectionWindow(QDialog):
         formLayout.addRow("Usuario", self.user)
         formLayout.addRow("Contraseña", self.password)
 
-        #Botones 
+        # Botones
         self.testButton = QPushButton("Probar conexión")
         self.saveButton = QPushButton("Aceptar")
         self.cancelButton = QPushButton("Cancelar")
@@ -57,27 +55,25 @@ class ConnectionWindow(QDialog):
         buttonsLayout.addWidget(self.saveButton)
         buttonsLayout.addWidget(self.cancelButton)
 
-        #Agregar layouts al principal
+        # Agregar layouts al principal
         mainLayout.addLayout(formLayout)
         mainLayout.addLayout(buttonsLayout)
 
         self.setLayout(mainLayout)
-        
+
         self.testButton.clicked.connect(self.test)
         self.saveButton.clicked.connect(self.save)
         self.cancelButton.clicked.connect(self.close)
 
-        #cargar configuración previa
+        # cargar configuración previa
         self.load_config()
-
-
 
     def get_config(self) -> ConnectionConfig:
 
         return ConnectionConfig(
             server=self.server.text().strip(),
             user=self.user.text().strip(),
-            password=self.password.text()
+            password=self.password.text(),
         )
 
     def test(self):
@@ -95,20 +91,12 @@ class ConnectionWindow(QDialog):
 
         config = self.get_config()
 
-        #guarda servidor y usuario
+        # guarda servidor y usuario
         config.save()
-
 
         QMessageBox.information(self, "Configuración", "Conexión guardada.")
 
         self.accept()
-
-    def get_config(self): 
-        return ConnectionConfig( 
-            server=self.server.text().strip(), 
-            user=self.user.text().strip(), 
-            password=self.password.text() 
-            )
 
     def load_config(self):
         config = ConnectionConfig.load()

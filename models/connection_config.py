@@ -1,11 +1,15 @@
-from dataclasses import dataclass, field
 import json
-from datetime import datetime
+from dataclasses import dataclass, field
 
-from security.credential_manager import(SQL_SERVICE, NAS_SERVICE, save_password, get_password)
-
+from security.credential_manager import (
+    NAS_SERVICE,
+    SQL_SERVICE,
+    get_password,
+    save_password,
+)
 
 CONFIG_FILE = "settings.json"
+
 
 @dataclass
 class ConnectionConfig:
@@ -29,8 +33,6 @@ class ConnectionConfig:
     email_ok: list[str] = field(default_factory=list)
     email_err: list[str] = field(default_factory=list)
 
-
-    
     def connection_string(self):
 
         return (
@@ -60,32 +62,20 @@ class ConnectionConfig:
             "schedule_start": self.schedule_start,
             "email_enabled": self.email_enabled,
             "email_ok": self.email_ok,
-            "email_err": self.email_err
-
-
+            "email_err": self.email_err,
         }
 
         with open(CONFIG_FILE, "w") as file:
             json.dump(data, file, indent=4)
 
-        
-        save_password(
-            SQL_SERVICE,
-            self.user,
-            self.password
-        ) 
+        save_password(SQL_SERVICE, self.user, self.password)
         if self.user:
-            save_password(
-                NAS_SERVICE,
-                self.nas_user,
-                self.nas_pass
-            ) 
+            save_password(NAS_SERVICE, self.nas_user, self.nas_pass)
 
     @classmethod
     def load(cls):
 
         try:
-
             with open(CONFIG_FILE, "r", encoding="utf-8") as file:
                 data = json.load(file)
 
@@ -96,7 +86,6 @@ class ConnectionConfig:
             nas_pass = ""
             if nas_user:
                 nas_pass = get_password(NAS_SERVICE, nas_user) or ""
-
 
             return cls(
                 server=data.get("server", ""),
@@ -117,11 +106,8 @@ class ConnectionConfig:
                 schedule_start=data.get("schedule_start", ""),
                 email_enabled=data.get("email_enabled", False),
                 email_ok=data.get("email_ok", []),
-                email_err=data.get("email_err", [])
+                email_err=data.get("email_err", []),
             )
-        
 
         except (FileNotFoundError, json.JSONDecodeError):
             return cls()
-
-    
