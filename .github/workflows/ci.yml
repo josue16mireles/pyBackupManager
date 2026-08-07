@@ -45,3 +45,7 @@ jobs:
     - name: Verificar sintaxis
       run: |
         python -m compileall .
+    
+    - name: Ejecutar pruebas
+      run: |
+          pytest
