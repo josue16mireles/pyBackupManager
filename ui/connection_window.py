@@ -1,4 +1,4 @@
-from database import test_connection
+from database import check_connection
 from models.connection_config import ConnectionConfig
 from PySide6.QtWidgets import (
     QDialog,
@@ -10,15 +10,12 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-# from PySide6.QtGui import QIcon
-
 
 class ConnectionWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Configación SQL Server")
-        # self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
         self.resize(420, 220)
 
         # layout principal
@@ -28,13 +25,10 @@ class ConnectionWindow(QDialog):
         formLayout = QFormLayout()
 
         # Servidor
-        # self.server = QLineEdit("localhost")
         self.server = QLineEdit()
 
         # Usuario
-        # layout.addWidget(QLabel("Usuario"), 1, 0)
         self.user = QLineEdit()
-        # layout.addWidget(self.user, 1, 1)
 
         # Password
         self.password = QLineEdit()
@@ -61,7 +55,7 @@ class ConnectionWindow(QDialog):
 
         self.setLayout(mainLayout)
 
-        self.testButton.clicked.connect(self.test)
+        self.testButton.clicked.connect(self.check)
         self.saveButton.clicked.connect(self.save)
         self.cancelButton.clicked.connect(self.close)
 
@@ -76,11 +70,11 @@ class ConnectionWindow(QDialog):
             password=self.password.text(),
         )
 
-    def test(self):
+    def check(self):
 
         config = self.get_config()
 
-        ok, message = test_connection(config)
+        ok, message = check_connection(config)
 
         if ok:
             QMessageBox.information(self, "Conexión", message)

@@ -3,7 +3,7 @@ import pyodbc
 from models.connection_config import ConnectionConfig
 
 
-def test_connection(config: ConnectionConfig):
+def check_connection(config: ConnectionConfig):
 
     try:
         connection = pyodbc.connect(config.connection_string(), timeout=5)
