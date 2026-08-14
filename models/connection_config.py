@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from security.credential_manager import (
+    EMAIL_SERVICE,
     NAS_SERVICE,
     SQL_SERVICE,
     get_password,
@@ -33,6 +34,8 @@ class ConnectionConfig:
     email_enabled: bool = False
     email_ok: list[str] = field(default_factory=list)
     email_err: list[str] = field(default_factory=list)
+    smtp_user: str = ""
+    smtp_pass: str = ""
 
     def connection_string(self):
 
@@ -64,14 +67,20 @@ class ConnectionConfig:
             "email_enabled": self.email_enabled,
             "email_ok": self.email_ok,
             "email_err": self.email_err,
+            "smtp_user": self.smtp_user,
         }
 
         with CONFIG_FILE.open("w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
 
+        # GUARDA CONTRASEÑA DE SLQ EN KEYRING
         save_password(SQL_SERVICE, self.user, self.password)
+        # GUARDA CONTRASEÑA DE NAS EN KEYRING
         if self.nas_user:
             save_password(NAS_SERVICE, self.nas_user, self.nas_pass)
+        # GUARDA CONTRASEÑA DE EMAIL EN KEYRING
+        if self.smtp_user:
+            save_password(EMAIL_SERVICE, self.smtp_user, self.smtp_pass)
 
     @classmethod
     def load(cls):
@@ -80,13 +89,19 @@ class ConnectionConfig:
             with CONFIG_FILE.open("r", encoding="utf-8") as file:
                 data = json.load(file)
 
+            # CARGA CONTRASEÑA DE SQL DESDE KEYRING
             user = data.get("user", "")
             password = get_password(SQL_SERVICE, user) or ""
-
+            # CARGA CONTRASEÑA DE NAS DESDE KEYRING
             nas_user = data.get("nas_user", "")
             nas_pass = ""
             if nas_user:
                 nas_pass = get_password(NAS_SERVICE, nas_user) or ""
+            # CARGA CONTRASEÑA DE EMAIL DESDE KEYRING
+            smtp_user = data.get("smtp_user", "")
+            smtp_pass = ""
+            if smtp_user:
+                smtp_pass = get_password(EMAIL_SERVICE, smtp_user) or ""
 
             return cls(
                 server=data.get("server", ""),
@@ -108,6 +123,8 @@ class ConnectionConfig:
                 email_enabled=data.get("email_enabled", False),
                 email_ok=data.get("email_ok", []),
                 email_err=data.get("email_err", []),
+                smtp_user=smtp_user,
+                smtp_pass=smtp_pass,
             )
 
         except (FileNotFoundError, json.JSONDecodeError):

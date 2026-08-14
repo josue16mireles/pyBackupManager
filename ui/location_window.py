@@ -3,8 +3,6 @@ from PySide6.QtWidgets import QDialog, QFileDialog
 
 from ui.ui_location_window import Ui_Dialog
 
-# from PySide6.QtGui import QIcon
-
 
 class LocationWindow(QDialog):
     def __init__(self, parent=None):
@@ -14,7 +12,6 @@ class LocationWindow(QDialog):
         self.ui.setupUi(self)
 
         self.setWindowTitle("Ubicación de Backups")
-        # self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
 
         # Conectar eventos
         self.ui.btnExaminar.clicked.connect(self.select_folder)

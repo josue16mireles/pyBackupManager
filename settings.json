@@ -15,5 +15,6 @@
     "schedule_start": "",
     "email_enabled": false,
     "email_ok": [],
-    "email_err": []
+    "email_err": [],
+    "smtp_user": ""
 }

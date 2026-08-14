@@ -2,6 +2,7 @@ import keyring
 
 SQL_SERVICE = "SQLBackupManager"
 NAS_SERVICE = "SQLBackupManagerNAS"
+EMAIL_SERVICE = "SQLBackupManagerEmail"
 
 
 def save_password(service: str, username: str, password: str):

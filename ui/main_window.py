@@ -17,6 +17,7 @@ from widgets.switch import Switch
 
 from ui.connection_window import ConnectionWindow
 from ui.databases_window import DatabasesWindow
+from ui.email_config_window import EmailWindow
 from ui.location_window import LocationWindow
 from ui.schedule_window import ScheduleWindow
 
@@ -347,6 +348,15 @@ class MainWindow(QMainWindow):
         emailheaderLayout.addWidget(self.email_label)
         emailheaderLayout.addStretch()
 
+        # boton configurar schedule
+        self.Email_config_button = self._create_icon_button_settings(
+            "resources/icons/settings.png", self.open_Email_config
+        )
+
+        self.Email_config_button.setEnabled(False)
+
+        emailheaderLayout.addWidget(self.Email_config_button)
+
         mainemailLayout.addLayout(emailheaderLayout)
 
         # Chk habilitar email
@@ -377,6 +387,9 @@ class MainWindow(QMainWindow):
         # notificar si backup fallo
         self.BkpErr = QLineEdit()
 
+        self.BkpOk.setText(", ".join(config.email_ok or []))
+        self.BkpErr.setText(", ".join(config.email_err or []))
+
         emailfrm.addRow("Backup correcto notificar a:", self.BkpOk)
         emailfrm.addRow("Backup incorrecto notificar a:", self.BkpErr)
         self.btnsaveBkpOk_button = self._create_icon_button_settings(
@@ -386,20 +399,30 @@ class MainWindow(QMainWindow):
 
         mainemailLayout.addWidget(self.email_fields)
 
-        # Actualiza la interfaz según el estado inicial
-        self.toggle_email(self.email_switch.isChecked())
+        self.email_fields.setEnabled(config.email_enabled)
+        self.Email_config_button.setEnabled(config.email_enabled)
+
+    def open_Email_config(self):
+        dialog = EmailWindow(self)
+        if dialog.exec():
+            self.open_Email_window()
 
     def toggle_email(self, enabled):
         config = ConnectionConfig.load()
         config.email_enabled = enabled
-        config.email_ok = self.BkpOk.text().strip()
-        config.email_err = self.BkpErr.text().strip()
+        config.email_ok = [email.strip() for email in self.BkpOk.text().split(",") if email.strip()]
+        config.email_err = [
+            email.strip() for email in self.BkpErr.text().split(",") if email.strip()
+        ]
         config.save()
         if hasattr(self, "email_fields"):
             self.email_fields.setEnabled(enabled)
+        self.Email_config_button.setEnabled(enabled)
 
     def save_email(self):
         config = ConnectionConfig.load()
-        config.email_ok = self.BkpOk.text().strip()
-        config.email_err = self.BkpErr.text().strip()
+        config.email_ok = [email.strip() for email in self.BkpOk.text().split(",") if email.strip()]
+        config.email_err = [
+            email.strip() for email in self.BkpErr.text().split(",") if email.strip()
+        ]
         config.save()
