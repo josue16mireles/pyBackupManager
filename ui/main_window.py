@@ -8,11 +8,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
+from services.backup_service import BackupService
 from widgets.switch import Switch
 
 from ui.connection_window import ConnectionWindow
@@ -34,6 +36,7 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
+        self._create_run_section()
         self._create_server_section()
         self._create_database_section()
         self._create_backup_location_section()
@@ -41,6 +44,7 @@ class MainWindow(QMainWindow):
         self._create_email_section()
 
         # se añaden los qframe a toplayout
+        layout.addWidget(self.run_frame)
         layout.addWidget(self.server_frame)
         layout.addWidget(self.database_frame)
         layout.addWidget(self.NAS_frame)
@@ -48,6 +52,106 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.email_frame)
 
         central.setLayout(layout)
+
+    def _create_run_section(self):
+        # LAYOUT EJECUTAR BACKUP
+        self.run_frame = QFrame()
+        self.run_frame.setFrameShape(QFrame.StyledPanel)
+
+        mainRunLayout = QVBoxLayout(self.run_frame)
+
+        # boton run
+        self.run_button = QPushButton("Iniciar Backup")
+        play_icon = QIcon("resources/icons/server.png")
+        self.run_button.setIcon(play_icon)
+        self.run_button.setIconSize(QSize(24, 24))
+        self.run_button.setCursor(Qt.PointingHandCursor)
+        self.run_button.setFixedHeight(40)
+        self.run_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.run_button.setFlat(False)
+        self.run_button.setStyleSheet("""
+            QPushButton{
+                background-color: #28a745;
+                color: #ffffff;
+                border: none;
+                border-radius: 24px;
+                padding: 8px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover{
+                background-color: #2ecc71;
+            }
+            QPushButton:pressed{
+                background-color: #1e7e34;
+            }
+        """)
+
+        RunheaderLayout = QHBoxLayout()
+        RunheaderLayout.addStretch()
+        RunheaderLayout.addWidget(self.run_button)
+
+        mainRunLayout.addLayout(RunheaderLayout)
+
+        self.run_button.clicked.connect(self.run)
+
+    def run(self):
+        config = ConnectionConfig.load()
+
+        if not config.server:
+            QMessageBox.warning(
+                self,
+                "Configuración incompleta",
+                "Debe configurar el servidor antes de ejecutar el backup.",
+            )
+            return
+
+        if not config.selected_databases:
+            QMessageBox.warning(
+                self,
+                "Configuración incompleta",
+                "Debe seleccionar al menos una base de datos antes de ejecutar el backup.",
+            )
+            return
+
+        if not config.selected_path:
+            QMessageBox.warning(
+                self,
+                "Configuración incompleta",
+                "Debe seleccionar la ubicación donde se guardarán los backups.",
+            )
+            return
+
+        reply = QMessageBox.question(
+            self,
+            "Iniciar Backup",
+            "¿Está seguro de que desea iniciar el backup ahora?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+
+        if reply != QMessageBox.Yes:
+            return
+
+        self.run_button.setEnabled(False)
+
+        try:
+            print("Iniciando el proceso de backup...")
+
+            backup_service = BackupService(config)
+            backup_files = backup_service.backup_all()
+
+            print("Backup completado.")
+            for backup_file in backup_files:
+                print(backup_file)
+
+            QMessageBox.information(
+                self, "Backup completado", "El backup se ha completado exitosamente."
+            )
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Ocurrió un error durante el backup: {str(e)}")
+        finally:
+            self.run_button.setEnabled(True)
 
     def _create_server_section(self):
         # LAYOUT SERVER
