@@ -1,3 +1,4 @@
+import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
@@ -114,13 +115,106 @@ class BackupService:
 
     def _copy_to_destination(self, backup_path: Path) -> Path:
         """Copia el backup temporal al destino configurado"""
+
         destination_directory = Path(self.config.selected_path)
-        destination_directory.mkdir(parents=True, exist_ok=True)
+        is_nas = self._is_nas_path()
 
-        destination_path = destination_directory / backup_path.name
+        if is_nas:
+            self._connect_to_nas()
 
-        print(f"Copiando backup a: {destination_path}")
+        try:
+            if not destination_directory.exists():
+                raise FileNotFoundError(
+                    f"No se puede acceder a la carpeta destino: {destination_directory}"
+                )
 
-        copy2(backup_path, destination_path)
+            destination_path = destination_directory / backup_path.name
 
-        return destination_path
+            print(f"Copiando backup a: {destination_path}")
+
+            copy2(backup_path, destination_path)
+
+            return destination_path
+        finally:
+            if is_nas:
+                self._disconnect_from_nas()
+
+    def _connect_to_nas(self) -> None:
+        """Conecta temporalmente al NAS"""
+        if not self.config.nas_user or not self.config.nas_pass:
+            raise ValueError(
+                "No se puede conectar al NAS. "
+                "El usuario o la contraseña no están configurados."
+            )
+
+        nas_share_path = self._get_nas_share_path()
+
+        command = [
+            "net",
+            "use",
+            nas_share_path,
+            self.config.nas_pass,
+            f"/user:{self.config.nas_user}",
+        ]
+
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        if result.returncode != 0:
+            raise ConnectionError(
+                f"No se pudo conectar al recurso NAS '{nas_share_path}'."
+                f"Error: {result.stderr.strip() or result.stdout.strip()}"
+            )
+
+    def _disconnect_from_nas(self) -> None:
+        """Desconecta la conexion temporal al NAS"""
+        nas_share_path = self._get_nas_share_path()
+
+        command = [
+            "net",
+            "use",
+            nas_share_path,
+            "/delete",
+            "/y",
+        ]
+
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        if result.returncode != 0:
+            print(
+                "No se pudo desconectar del recurso NAS."
+                f"Error: {result.stderr.strip() or result.stdout.strip()}"
+            )
+
+    def _get_nas_share_path(self) -> str:
+        """
+        Obtiene la ruta del recurso compartido desde una ruta UNC.
+
+        Ejemplo:
+        \\\\192.168.1.146\\Backup\\MAIN\\SQL
+        -> \\\\192.168.1.146\\Backup
+        """
+
+        path = self.config.selected_path.strip("\\")
+        parts = path.split("\\")
+
+        if len(parts) < 2:
+            raise ValueError(
+                f"La ruta NAS no tiene un formato UNC válido: {self.config.selected_path}"
+            )
+
+        return f"\\\\{parts[0]}\\{parts[1]}"
+
+    def _is_nas_path(self) -> bool:
+        """Devuelve True si la ruta configurada es una ruta UNC."""
+
+        return self.config.selected_path.startswith("\\\\")
