@@ -121,6 +121,9 @@
           <property name="inputMask">
            <string/>
           </property>
+          <property name="echoMode">
+           <enum>QLineEdit::EchoMode::Password</enum>
+          </property>
           <property name="placeholderText">
            <string/>
           </property>

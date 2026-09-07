@@ -1,37 +1,39 @@
-from PySide6.QtWidgets import (
-     QDialog,
-    QPushButton,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QCheckBox,
-    QWidget,
-    QScrollArea
-)
-from PySide6.QtCore import Qt
 from database import get_databases
 from models.connection_config import ConnectionConfig
-#from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
+
+# from PySide6.QtGui import QIcon
+
 
 class DatabasesWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Selección Base de Datos")
-        #self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
-        self.resize(420,220)
+        # self.setWindowIcon(QIcon("resources/icons/BkpIco.ico"))
+        self.resize(420, 220)
 
-        #layout principal
+        # layout principal
         layout = QVBoxLayout()
 
         label = QLabel("Seleccione las bases de datos que desea reslpaldar")
         layout.addWidget(label)
 
-        #checkbox seleccionar todas
+        # checkbox seleccionar todas
         self.chkAll = QCheckBox("Seleccionar todas")
         layout.addWidget(self.chkAll)
 
-        #area scroll lista de DB
+        # area scroll lista de DB
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
 
@@ -43,20 +45,19 @@ class DatabasesWindow(QDialog):
 
         layout.addWidget(scroll)
 
-        #botones
+        # botones
         btnLayout = QHBoxLayout()
         btnLayout.addStretch()
-        
+
         self.savebtn = QPushButton("Guardar")
         self.cancelbtn = QPushButton("Cancelar")
-        
+
         btnLayout.addWidget(self.savebtn)
         btnLayout.addWidget(self.cancelbtn)
 
-
         layout.addLayout(btnLayout)
 
-        #lista para los chkBox
+        # lista para los chkBox
         self.databaseCheckboxes = []
 
         # carga bases de datos
@@ -65,9 +66,9 @@ class DatabasesWindow(QDialog):
             databases = get_databases()
             self.load_databases(databases)
         except Exception as ex:
-            print(ex)        
+            print(ex)
 
-        #eventos
+        # eventos
         self.chkAll.toggled.connect(self.toggle_all)
         self.savebtn.clicked.connect(self.save)
         self.cancelbtn.clicked.connect(self.close)
@@ -119,13 +120,9 @@ class DatabasesWindow(QDialog):
 
     def get_selected_databases(self):
         """Devuelve una lista con las bases seleccionadas."""
-        return [
-            cb.text()
-            for cb in self.databaseCheckboxes
-            if cb.isChecked()
-        ]
+        return [cb.text() for cb in self.databaseCheckboxes if cb.isChecked()]
 
-    #guarda la lista de las bases de datos seleccionadas
+    # guarda la lista de las bases de datos seleccionadas
     def save(self):
         config = ConnectionConfig.load()
         config.selected_databases = self.get_selected_databases()
